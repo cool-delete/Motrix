@@ -1,31 +1,33 @@
-name: 一次性构建 Windows 安装包
+name: 【仅一次】构建 Windows 安装包
 
 on:
-  workflow_dispatch:  # 仅手动触发，构建一次后就不再运行
+  workflow_dispatch:
 
 jobs:
-  build:
+  build-windows-only:
     runs-on: windows-latest
     
     steps:
-    - name: 检出代码
-      uses: actions/checkout@v4
-      
-    - name: 安装 Node.js
+    - uses: actions/checkout@v4
+
+    - name: 设置 Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        
-    - name: 安装依赖
+        cache: 'npm'
+
+    - name: 安装依赖 (绕过版本检查)
       run: |
-        npm install
-        
-    - name: 构建 Windows 安装包
-      run: |
-        npx electron-builder --win --x64
-        
-    - name: 上传安装包
+        npm install --legacy-peer-deps
+        # 如果上面失败，尝试：
+        # npm install --force
+
+    - name: 构建 (仅Windows)
+      run: npx electron-builder --win --x64 --publish never
+
+    - name: 上传成品
       uses: actions/upload-artifact@v4
       with:
-        name: Motrix-Windows-安装包
+        name: Motrix-WIN-Only
         path: dist/*.exe
+        retention-days: 90
