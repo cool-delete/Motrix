@@ -16,13 +16,14 @@ jobs:
         node-version: '18'
         cache: 'npm'
 
-    - name: 安装依赖 (绕过版本检查)
-      run: |
-        npm install --legacy-peer-deps
-        # 如果上面失败，尝试：
-        # npm install --force
+    - name: 安装依赖
+      run: npm install --legacy-peer-deps
 
-    - name: 构建 (仅Windows)
+    - name: 编译项目
+      run: npm run build:github
+      # 或者使用：node .electron-vue/build.js
+
+    - name: 打包 Windows 安装包
       run: npx electron-builder --win --x64 --publish never
 
     - name: 上传成品
