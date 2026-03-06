@@ -1,34 +1,40 @@
-name: 【仅一次】构建 Windows 安装包
+name: 构建 Windows 安装包
 
 on:
   workflow_dispatch:
 
 jobs:
-  build-windows-only:
+  build-windows:
     runs-on: windows-latest
     
     steps:
-    - uses: actions/checkout@v4
-
+    - name: 检出代码
+      uses: actions/checkout@v4
+    
     - name: 设置 Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'npm'
-
+    
     - name: 安装依赖
       run: npm install --legacy-peer-deps
-
-    - name: 编译项目
-      run: npm run build:github
-      # 或者使用：node .electron-vue/build.js
-
+    
+    - name: 构建项目
+      run: node .electron-vue/build.js
+    
     - name: 打包 Windows 安装包
       run: npx electron-builder --win --x64 --publish never
-
-    - name: 上传成品
+    
+    - name: 列出生成文件
+      run: |
+        Get-ChildItem release -Recurse -Filter *.exe | Format-Table FullName
+        Get-ChildItem release -Recurse -Filter *.msi | Format-Table FullName
+    
+    - name: 上传安装包
       uses: actions/upload-artifact@v4
       with:
-        name: Motrix-WIN-Only
-        path: dist/*.exe
+        name: Motrix-Windows-Installer
+        path: |
+          release/**/*.exe
+          release/**/*.msi
         retention-days: 90
